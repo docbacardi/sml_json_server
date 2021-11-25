@@ -1,0 +1,5 @@
+# Ignore all generated files.
+/build/
+
+# Ignore all compiled Python files.
+*.pyc
