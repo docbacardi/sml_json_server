@@ -1,12 +1,15 @@
 PROJECT("server")
 
 SET(CJSON_DIR "${CMAKE_BINARY_DIR}/external/cJSON/install")
+SET(LIBSML_DIR "${CMAKE_BINARY_DIR}/external/libsml/libsml/src/TARGET_libsml/sml")
+
+MESSAGE("${LIBSML_DIR}/include")
 
 ADD_EXECUTABLE(TARGET_server
                main.c)
-TARGET_LINK_LIBRARIES(TARGET_server "${CJSON_DIR}/lib/libcjson.a")
+TARGET_LINK_LIBRARIES(TARGET_server "${CJSON_DIR}/lib/libcjson.a" "${LIBSML_DIR}/lib/libsml.a" "-luuid" "-lm")
 TARGET_INCLUDE_DIRECTORIES(TARGET_server
-                           PRIVATE "${CJSON_DIR}/include")
+                           PRIVATE "${CJSON_DIR}/include" "${LIBSML_DIR}/include")
 
 # On mingw link all compiler libraries static.
 IF((CMAKE_SYSTEM_NAME STREQUAL "Windows") AND (${CMAKE_COMPILER_IS_GNUCC}))
