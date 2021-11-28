@@ -18,7 +18,12 @@
 #include <sml/sml_transport.h>
 #include <sml/sml_value.h>
 
+#include "zmq.h"
+
 #include "unit.h"
+
+
+void *ptZmqPublisher;
 
 
 int serial_port_open(const char* device) {
@@ -69,6 +74,7 @@ void transport_receiver(unsigned char *buffer, size_t buffer_len) {
 	cJSON *ptDataSet;
 	cJSON *ptEntry;
 	char *pcJSON;
+	size_t sizJSON;
 	u8 ucType;
 	char acID[1024];
 	// the buffer contains the whole message, with transport escape sequences.
@@ -168,7 +174,12 @@ void transport_receiver(unsigned char *buffer, size_t buffer_len) {
 				}
 				else
 				{
-					printf("Data: ***%s***\n", pcJSON);
+					/* Get the size of the JSON data. */
+					sizJSON = strlen(pcJSON);
+#if 0
+					printf("Data (%d bytes): ***%s***\n", sizJSON, pcJSON);
+#endif
+					zmq_send(ptZmqPublisher, pcJSON, sizJSON, 0);
 					free(pcJSON);
 				}
 
@@ -184,21 +195,48 @@ void transport_receiver(unsigned char *buffer, size_t buffer_len) {
 
 int main(void)
 {
+	int iZmqMajor, iZmqMinor, iZmqPatch;
+	int iFdPort;
 	cJSON *ptDataSet;
 	cJSON *ptItem;
 	char *pcJSON;
+	void *ptZmqContext;
+	int iResult;
+	int iExitCode;
 
 
+	iExitCode = 0;
 	printf("Using cJSON %s\n", cJSON_Version());
+	zmq_version(&iZmqMajor, &iZmqMinor, &iZmqPatch);
+	printf ("Using ØMQ v%d.%d.%d\n", iZmqMajor, iZmqMinor, iZmqPatch);
 
 	/* Open serial port. */
-	int fd = serial_port_open("/dev/ttyUSB1");
-	if (fd < 0) {
+	iFdPort = serial_port_open("/dev/ttyUSB1");
+	if( iFdPort<0 )
+	{
 		// error message is printed by serial_port_open()
-		exit(1);
+		iExitCode = 1;
+	}
+	else
+	{
+		ptZmqContext = zmq_ctx_new();
+		ptZmqPublisher = zmq_socket(ptZmqContext, ZMQ_PUB);
+		iResult = zmq_bind(ptZmqPublisher, "tcp://*:5556");
+		if( iResult!=0 )
+		{
+			fprintf(stderr, "Failed to create the ZMQ PUB socket.\n");
+			iExitCode = 1;
+		}
+		else
+		{
+			// listen on the serial device, this call is blocking.
+			sml_transport_listen(iFdPort, &transport_receiver);
+
+			close(iFdPort);
+			zmq_close(ptZmqPublisher);
+			zmq_ctx_destroy(ptZmqContext);
+		}
 	}
 
-	// listen on the serial device, this call is blocking.
-	sml_transport_listen(fd, &transport_receiver);
-	close(fd);
+	return iExitCode;
 }
