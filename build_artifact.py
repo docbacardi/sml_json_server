@@ -46,11 +46,11 @@ if tPlatform['host_distribution_id'] == 'ubuntu':
         if tPlatform['cpu_architecture'] == tPlatform['host_cpu_architecture']:
             # Build for the build host.
 
-#            # Check for all system dependencies.
-#            astrDeb = [
-#                'libudev-dev'
-#            ]
-#            install.install_host_debs(astrDeb)
+            # Check for all system dependencies.
+            astrDeb = [
+                'uuid-dev'
+            ]
+            install.install_host_debs(astrDeb)
 
             astrCMAKE_COMPILER = []
             astrCMAKE_PLATFORM = []
@@ -59,11 +59,11 @@ if tPlatform['host_distribution_id'] == 'ubuntu':
         elif tPlatform['cpu_architecture'] == 'arm64':
             # Build on linux for raspebrry.
 
-#            # Install the build dependencies.
-#            astrDeb = [
-#                'libudev-dev:arm64'
-#            ]
-#            install.install_foreign_debs(astrDeb, strCfg_workingFolder, strCfg_projectFolder)
+            # Install the build dependencies.
+            astrDeb = [
+                'uuid-dev:arm64'
+            ]
+            install.install_foreign_debs(astrDeb, strCfg_workingFolder, strCfg_projectFolder)
 
             astrCMAKE_COMPILER = [
                 '-DCMAKE_TOOLCHAIN_FILE=%s/cmake/toolchainfiles/toolchain_ubuntu_arm64.cmake' % strCfg_projectFolder

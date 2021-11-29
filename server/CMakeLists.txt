@@ -1,9 +1,8 @@
 PROJECT("server")
 
 SET(CJSON_DIR "${CMAKE_BINARY_DIR}/external/cJSON/install")
-SET(LIBSML_DIR "${CMAKE_BINARY_DIR}/external/libsml/libsml/src/TARGET_libsml/sml")
+SET(LIBSML_DIR "${CMAKE_BINARY_DIR}/external/libsml/install")
 SET(LIBZMQ_DIR "${CMAKE_BINARY_DIR}/external/libzmq/install")
-
 
 ADD_EXECUTABLE(TARGET_server
                server.cpp)
