@@ -1,7 +1,7 @@
 #! /bin/bash
 
 PKG_DIR=$(pwd)
-apt-get download $(apt-cache depends --recurse --no-recommends --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances --no-pre-depends $1 | grep "^\w")
+apt-get download $1
 find . -name "*.deb" -exec dpkg-deb --extract '{}' . \;
 ALLLINKS=$(find . -xtype l)
 for LINK in ${ALLLINKS}
