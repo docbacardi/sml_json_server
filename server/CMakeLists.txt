@@ -1,5 +1,7 @@
 PROJECT("server")
 
+SET(PROJECT_VERSION "1.0.0")
+
 SET(CJSON_DIR "${CMAKE_BINARY_DIR}/external/cJSON/install")
 SET(LIBSML_DIR "${CMAKE_BINARY_DIR}/external/libsml/install")
 SET(LIBZMQ_DIR "${CMAKE_BINARY_DIR}/external/libzmq/install")
@@ -46,3 +48,18 @@ IF((CMAKE_SYSTEM_NAME STREQUAL "Windows") AND (${CMAKE_COMPILER_IS_GNUCC}))
     ADD_TEST(NAME client_MinGW_DLL_dependencies
         COMMAND "${PYTHON_INTERPRETER}" ${TEST_SCRIPT_DIR}/mingw_dll_dependencies.py $<TARGET_FILE:TARGET_client>)
 ENDIF((CMAKE_SYSTEM_NAME STREQUAL "Windows") AND (${CMAKE_COMPILER_IS_GNUCC}))
+
+#----------------------------------------------------------------------------
+#
+# Build a package for the selected platform.
+#
+
+SET(CPACK_OUTPUT_FILE_PREFIX ${CMAKE_BINARY_DIR}/../repository/sml_json_server/${PROJECT_VERSION})
+SET(CPACK_INCLUDE_TOPLEVEL_DIRECTORY FALSE)
+SET(CPACK_PACKAGE_FILE_NAME "sml_json_server-${PROJECT_VERSION}-${JONCHKI_PLATFORM}")
+
+SET(CPACK_GENERATOR "TXZ")
+INCLUDE(CPack)
+
+INSTALL(TARGETS TARGET_server TARGET_client
+        DESTINATION .)

@@ -141,3 +141,4 @@ astrCmd.append(strCfg_projectFolder)
 strCwd = strCfg_workingFolder
 subprocess.check_call(' '.join(astrCmd), shell=True, cwd=strCwd, env=astrEnv)
 subprocess.check_call('%s' % strMake, shell=True, cwd=strCwd, env=astrEnv)
+subprocess.check_call('%s package' % strMake, shell=True, cwd=strCwd, env=astrEnv)
