@@ -1,3 +1,4 @@
+#include <getopt.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -193,7 +194,7 @@ void transport_receiver(unsigned char *buffer, size_t buffer_len) {
 }
 
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	int iZmqMajor, iZmqMinor, iZmqPatch;
 	int iFdPort;
@@ -203,7 +204,44 @@ int main(void)
 	void *ptZmqContext;
 	int iResult;
 	int iExitCode;
+	int iPort;
+	char acSocketAddress[128];
 
+
+	/* Set the default values. */
+	iPort = 7175;
+
+	while((iResult=getopt(argc, argv, "+hp:")) != -1) {
+		switch(iResult)
+		{
+		case 'h':
+			printf("usage: %s [-h] [-p PORT] DEVICE\n", argv[0]);
+			printf("DEVICE - serial device of connected power meter e.g. /dev/ttyUSB0, or - for stdin\n");
+			printf("-h - help\n");
+			printf("-p PORT - Distribute the messages on PORT with a 0MQ PUB socket. Default is %d.\n", iPort);
+			exit(0);
+			break;
+		case 'p':
+			iPort = atoi(optarg);
+			break;
+		case '?':
+			/* Get a not specified switch, error message is printed by getopt(). */
+			printf("Use %s -h for help.\n", argv[0]);
+			exit(1);
+			break;
+		default:
+			break;
+		}
+	}
+
+	if( argc-optind!=1 )
+	{
+		printf("error: Arguments mismatch.\nUse %s -h for help.\n", argv[0]);
+		exit(1);
+	}
+
+	snprintf(acSocketAddress, sizeof(acSocketAddress), "tcp://127.0.0.1:%d", iPort);
+	printf("Socket: %s\n", acSocketAddress);
 
 	iExitCode = 0;
 	printf("Using cJSON %s\n", cJSON_Version());
@@ -211,7 +249,7 @@ int main(void)
 	printf ("Using ØMQ v%d.%d.%d\n", iZmqMajor, iZmqMinor, iZmqPatch);
 
 	/* Open serial port. */
-	iFdPort = serial_port_open("/dev/ttyUSB1");
+	iFdPort = serial_port_open(argv[optind]);
 	if( iFdPort<0 )
 	{
 		// error message is printed by serial_port_open()
@@ -221,7 +259,7 @@ int main(void)
 	{
 		ptZmqContext = zmq_ctx_new();
 		ptZmqPublisher = zmq_socket(ptZmqContext, ZMQ_PUB);
-		iResult = zmq_bind(ptZmqPublisher, "tcp://*:5556");
+		iResult = zmq_bind(ptZmqPublisher, acSocketAddress);
 		if( iResult!=0 )
 		{
 			fprintf(stderr, "Failed to create the ZMQ PUB socket.\n");
